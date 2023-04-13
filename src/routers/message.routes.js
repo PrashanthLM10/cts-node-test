@@ -33,5 +33,9 @@ router.post('/message/setMessage', async (req, res) => {
     }
 });
 
+router.get('/', (req, res) => {
+    res.status(200).send('working');
+})
+
 
 module.exports =  router;
