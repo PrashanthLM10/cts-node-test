@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(messageRoutes);
 
 // listen to port
-app.listen(process.env.PORT || 3000, () => {
-    print('port up');
+app.listen(process.env.PORT || 3001, () => {
+    print('port up', process.env.PORT || 3001);
 });
 

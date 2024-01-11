@@ -13,6 +13,10 @@ const Message = new mongoose.Schema({
         required: true,
         trim: true
     },
+    time:{
+        type: Number,
+        required: true
+    }
 }, {
     timestamps: true,
     'collection': 'Message'
