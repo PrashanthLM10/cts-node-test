@@ -1,3 +1,4 @@
+// setting messageId whichis the id of the document in Mongodb.
 global.messageId = 123;
 global.print = console.log;
 const express = require('express');
