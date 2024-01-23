@@ -15,7 +15,7 @@ RUN npm install --production
 ENV PORT 8080
 
 # Expose port to look for incoming TCP requests
-EXPOSE 3000
+EXPOSE 8080
 
 # Define the entry point for the container
 CMD ["npm", "start"]
