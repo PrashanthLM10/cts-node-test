@@ -12,3 +12,6 @@ RUN npm install
 
 # Define the entry point for the container
 CMD ["npm", "start"]
+
+# Expose port to look for incoming TCP requests
+EXPOSE 3000
