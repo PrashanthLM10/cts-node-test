@@ -6,8 +6,7 @@ router.get('/notes/getAllNotes', async (req, res) => {
     try
     {
         const notes = await NotesModel.find({});
-        console.log(notes);
-        res.send(notes);
+        res.send(notes.map(note =>  ({title: note.title, _id: note._id})));
     } catch(e) {
         res.status(500).send(e);
     }
@@ -19,7 +18,7 @@ router.get('/notes/getAllNotes', async (req, res) => {
 router.post('/notes/getNote', async (req, res) => {
     try
     {
-        const note = await NotesModel.findOne({_id: req.query.id});
+        const note = await NotesModel.findOne({_id: req.body._id});
         res.send(note);
     } catch(e) {
         res.status(500).send(e);
@@ -34,11 +33,12 @@ router.post('/notes/getNote', async (req, res) => {
 router.post('/notes/addNote', async (req, res) => {
     try
     { 
-        const note = new NotesModel(req.body);
         if(!checkIfNoteExists(req.body.title)) {
-            await note.save();
-            res.send(note);
+            console.log('------------');
+            const note = await new NotesModel({title: req.body.title, content: ''}).save();
+            res.status(200).send(note);
         } else {
+            console.log('title', title)
             res.status(400).send('Note with the same title already exists');
             return;
         }
@@ -54,8 +54,10 @@ router.post('/notes/updateNoteTitle', async (req, res) => {
     try
     {
         if(!checkIfNoteExists) {
-            const note = await NotesModel.findOneAndUpdate({_id: req.body.id}, req.body, {new: true});
-            res.send(note);
+            const [note] = await NotesModel.findOne({_id: req.body._id});
+            note.title = req.body.title;
+            const saveStatus = await note.save();
+            res.status(200).send(saveStatus);
         } else {
             res.status(400).send('Note with the same title already exists');
             return;
@@ -71,8 +73,10 @@ router.post('/notes/updateNoteTitle', async (req, res) => {
 router.post('/notes/updateNoteContent', async (req, res) => {
     try
     {
-        const note = await NotesModel.findOneAndUpdate({_id: req.body.id}, req.body, {new: true});
-        res.send(note);
+        const note = await NotesModel.findOne({_id: req.body._id});
+        note.content = req.body.content;
+        const saveStatus = await note.save();
+        res.status(200).send(saveStatus);
     } catch(e) {
         res.status(500).send(e);
     }
