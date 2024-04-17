@@ -18,4 +18,3 @@ app.use(notesRoutes);
 app.listen(process.env.PORT || 3001, () => {
     print('port up', process.env.PORT || 3001);
 });
-
