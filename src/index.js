@@ -15,7 +15,7 @@ app.use(messageRoutes);
 app.use(notesRoutes);
 
 // listen to port
-app.listen(process.env.PORT || 3001, () => {
-    print('port up', process.env.PORT || 3001);
+app.listen(process.env.PORT || 3003, () => {
+    print('port up', process.env.PORT || 3003);
 });
 

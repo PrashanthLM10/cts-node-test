@@ -33,15 +33,27 @@ router.post('/notes/getNote', async (req, res) => {
 router.post('/notes/addNote', async (req, res) => {
     try
     { 
-        if(!checkIfNoteExists(req.body.title)) {
-            console.log('------------');
+        const noteExists = await checkIfNoteExists(req.body.title);
+        if(!noteExists) {
             const note = await new NotesModel({title: req.body.title, content: ''}).save();
             res.status(200).send(note);
         } else {
-            console.log('title', title)
             res.status(400).send('Note with the same title already exists');
             return;
         }
+    } catch(e) {
+        res.status(500).send(e);
+    }
+});
+
+/* 
+    @params: id
+*/
+router.post('/notes/deleteNote', async (req, res) => {
+    try
+    {
+        const note = await NotesModel.deleteOne({_id: req.body._id});
+        res.send(note);
     } catch(e) {
         res.status(500).send(e);
     }
@@ -53,7 +65,8 @@ router.post('/notes/addNote', async (req, res) => {
 router.post('/notes/updateNoteTitle', async (req, res) => {
     try
     {
-        if(!checkIfNoteExists) {
+        const noteExists = await checkIfNoteExists(req.body.title);
+        if(!noteExists) {
             const [note] = await NotesModel.findOne({_id: req.body._id});
             note.title = req.body.title;
             const saveStatus = await note.save();
@@ -83,8 +96,13 @@ router.post('/notes/updateNoteContent', async (req, res) => {
 });
 
 
-const getAllNoteTitles = async () => {
+const getAllNotes = async () => {
     const notes = await NotesModel.find({});
+    return notes;
+}
+
+const getAllNoteTitles = async () => {
+    const notes = await getAllNotes();
     return notes.map(note => note.title);
 }
 
