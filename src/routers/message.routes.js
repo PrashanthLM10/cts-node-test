@@ -1,4 +1,5 @@
 const express = require('express');
+const os = require('node:os'); 
 const router = new express.Router();
 const {MessageModel, messageFields} = require('../models/message.model');    
 const {PreviousMessageModel, prevMessageFields} = require('../models/previousMessage.model');    
@@ -55,7 +56,7 @@ router.post('/message/setMessage', async (req, res) => {
 });
 
 router.get('/', (req, res) => {
-    res.status(200).send('working');
+    res.status(200).send({platform: os.platform(), hostname: os.hostname(), machine: os.machine()});
 })
 
 
