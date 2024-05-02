@@ -1,5 +1,6 @@
 const express = require('express');
 const os = require('node:os'); 
+const cp = require('child_process');
 const router = new express.Router();
 const {MessageModel, messageFields} = require('../models/message.model');    
 const {PreviousMessageModel, prevMessageFields} = require('../models/previousMessage.model');    
@@ -56,7 +57,21 @@ router.post('/message/setMessage', async (req, res) => {
 });
 
 router.get('/', (req, res) => {
-    res.status(200).send({platform: os.platform(), hostname: os.hostname(), machine: os.machine()});
+ 
+    function getComputerName() {
+    switch (process.platform) {
+        case "win32":
+        return process.env.COMPUTERNAME;
+        case "darwin":
+        return cp.execSync("scutil --get ComputerName").toString().trim();
+        case "linux":
+        const prettyname = cp.execSync("hostnamectl --pretty").toString().trim();
+        return prettyname === "" ? os.hostname() : prettyname;
+        default:
+        return os.hostname();
+     }
+    }
+    res.status(200).send({platform: os.platform(), hostname: getComputerName(), machine: os.machine(), userProfile:process.env['USERPROFILE']});
 })
 
 
