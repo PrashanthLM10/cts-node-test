@@ -58,20 +58,24 @@ router.post('/message/setMessage', async (req, res) => {
 
 router.get('/', (req, res) => {
  
-    function getComputerName() {
-    switch (process.platform) {
-        case "win32":
-        return process.env.COMPUTERNAME;
-        case "darwin":
-        return cp.execSync("scutil --get ComputerName").toString().trim();
-        case "linux":
-        const prettyname = cp.execSync("hostnamectl --pretty").toString().trim();
-        return prettyname === "" ? os.hostname() : prettyname;
-        default:
-        return os.hostname();
-     }
+    try{
+        function getComputerName() {
+            switch (process.platform) {
+                case "win32":
+                return process.env.COMPUTERNAME;
+                case "darwin":
+                return cp.execSync("scutil --get ComputerName").toString().trim();
+                case "linux":
+                const prettyname = cp.execSync("hostnamectl --pretty").toString().trim();
+                return prettyname === "" ? os.hostname() : prettyname;
+                default:
+                return os.hostname();
+             }
+            }
+            res.status(200).send({platform: os.platform(), hostname: getComputerName(), machine: os.machine(), userProfile:process.env['USERPROFILE']});
+    }catch(e){
+        res.status(500).send(e);
     }
-    res.status(200).send({platform: os.platform(), hostname: getComputerName(), machine: os.machine(), userProfile:process.env['USERPROFILE']});
 })
 
 
