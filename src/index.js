@@ -3,6 +3,7 @@ global.messageId = 123;
 global.print = console.log;
 const express = require('express');
 const cors = require('cors');
+const { setSocket } = require('./group/index');
 const messageRoutes = require('./routers/message.routes');
 const notesRoutes = require('./routers/notes.routes');
 
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(messageRoutes);
 app.use(notesRoutes);
+setSocket();
 
 // listen to port
 app.listen(process.env.PORT || 3003, () => {
