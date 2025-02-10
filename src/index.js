@@ -14,10 +14,11 @@ app.use(cors());
 app.use(express.json());
 app.use(messageRoutes);
 app.use(notesRoutes);
-setSocket();
 
 // listen to port
-app.listen(process.env.PORT || 3003, () => {
+const server = app.listen(process.env.PORT || 3003, () => {
     print('port up', process.env.PORT || 3003);
 });
+
+setSocket(server);
 

@@ -6,9 +6,8 @@ const getUniqueID= () => {
     return s4() + s4() + '-' + s4();
 }
 
-const setSocket = () => {
-    const port = process.env.PORT || 3000 ;
-    const socket = new WebSocketServer({port: port});
+const setSocket = (server) => {
+    const socket = new WebSocketServer({server: server});
     socket.on('connection', ws => {
         ws.socketID = getUniqueID();
         ws.send(JSON.stringify({type: 'setSocketID', socketID: ws.socketID}));
