@@ -20,7 +20,8 @@ router.get('/message/getMessage', async (req, res) => {
             message: messageObj.message,
             time: messageObj.time,
             previousMessage: previousMessageObj?.message || '',
-            previousMessageTime: previousMessageObj?.time || ''
+            previousMessageTime: previousMessageObj?.time || '',
+            userAgent: req.headers['user-agent']
         }
         res.status(200).send(response);
     } catch (e) {res.status(500).send(e)};
