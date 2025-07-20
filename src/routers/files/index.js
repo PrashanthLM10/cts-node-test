@@ -36,8 +36,10 @@ let upload = null;
 // https://ap-south-1.console.aws.amazon.com/systems-manager/parameters/?region=ap-south-1&tab=Table
 // The above was for when deployed in AWS EC2
 
-const accessKey = decryptString(process.env.S3_ACCESS_KEY);
-const secretAccessKey = decryptString(process.env.S3_SECRET_ACCESS_KEY);
+const accessKey = decryptString(process.env.S3_PERSONAL_ACCESS_KEY);
+const secretAccessKey = decryptString(
+  process.env.S3_PERSONAL_SECRET_ACCESS_KEY
+);
 
 const getAccessKeys = async () => {
   return {
@@ -49,7 +51,7 @@ const getAccessKeys = async () => {
 // Using the fetched params to configure S3Client
 const setupS3Client = () => {
   s3Client = new S3Client({
-    region: process.env.AWS_S3_REGION,
+    region: process.env.AWS_S3_PERSONAL_REGION,
     credentials: {
       accessKeyId: accessKey,
       secretAccessKey: secretAccessKey,
@@ -62,12 +64,15 @@ const setupMulter = () => {
   upload = multer({
     storage: multerS3({
       s3: s3Client,
-      bucket: process.env.AWS_S3_BUCKETNAME,
+      bucket: process.env.AWS_S3_PERSONAL_BUCKETNAME,
       metadata: function (req, file, cb) {
         cb(null, { fieldName: file.fieldname });
       },
       key: function (req, file, cb) {
-        cb(null, `${process.env.AWS_S3_FILES_FOLDER}/${file.originalname}`);
+        cb(
+          null,
+          `${process.env.AWS_S3_PERSONAL_FILES_FOLDER}/${file.originalname}`
+        );
       },
     }),
     limits: {
@@ -105,7 +110,7 @@ const setupFilesRoutes = () => {
   const getSignedURLForObject = async (client, key) => {
     try {
       const command = new GetObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKETNAME,
+        Bucket: process.env.AWS_S3_PERSONAL_BUCKETNAME,
         Key: key,
       });
       // URL expires in 1 hour.
@@ -131,8 +136,8 @@ const setupFilesRoutes = () => {
 
     // bucket config
     const params = {
-      Bucket: process.env.AWS_S3_BUCKETNAME,
-      prefix: process.env.AWS_S3_FILES_FOLDER,
+      Bucket: process.env.AWS_S3_PERSONAL_BUCKETNAME,
+      prefix: process.env.AWS_S3_PERSONAL_FILES_FOLDER,
     };
 
     const objects = [];
@@ -144,7 +149,7 @@ const setupFilesRoutes = () => {
 
       //
       const files = objects.find((bucket) =>
-        bucket[0].Key.includes(process.env.AWS_S3_FILES_FOLDER)
+        bucket[0].Key.includes(process.env.AWS_S3_PERSONAL_FILES_FOLDER)
       );
 
       // add a presigned url to download which expires in 1 hour
@@ -158,11 +163,11 @@ const setupFilesRoutes = () => {
     } catch (e) {
       if (e instanceof S3ServiceException && e.name === "NoSuchBucket") {
         console.error(
-          `Error from S3 while listing objects for "${process.env.AWS_S3_BUCKETNAME}". The bucket doesn't exist.`
+          `Error from S3 while listing objects for "${process.env.AWS_S3_PERSONAL_BUCKETNAME}". The bucket doesn't exist.`
         );
       } else if (e instanceof S3ServiceException) {
         console.error(
-          `Error from S3 while listing objects for "${process.env.AWS_S3_BUCKETNAME}".  ${e.name}: ${e.message}`
+          `Error from S3 while listing objects for "${process.env.AWS_S3_PERSONAL_BUCKETNAME}".  ${e.name}: ${e.message}`
         );
       } else {
         throw e;
@@ -178,8 +183,8 @@ const setupFilesRoutes = () => {
     }
 
     const deleteParams = {
-      Bucket: process.env.AWS_S3_BUCKETNAME,
-      Key: `${process.env.AWS_S3_FILES_FOLDER}/${fileName}`,
+      Bucket: process.env.AWS_S3_PERSONAL_BUCKETNAME,
+      Key: `${process.env.AWS_S3_PERSONAL_FILES_FOLDER}/${fileName}`,
     };
 
     const deleteCommand = new DeleteObjectCommand(deleteParams);
@@ -219,16 +224,16 @@ const setupFilesRoutes = () => {
 
     // get rename command to send to s3
     const copyCommand = new CopyObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKETNAME,
-      Key: `${process.env.AWS_S3_FILES_FOLDER}/${newName}`,
-      CopySource: `${process.env.AWS_S3_BUCKETNAME}/${process.env.AWS_S3_FILES_FOLDER}/${oldName}`,
+      Bucket: process.env.AWS_S3_PERSONAL_BUCKETNAME,
+      Key: `${process.env.AWS_S3_PERSONAL_FILES_FOLDER}/${newName}`,
+      CopySource: `${process.env.AWS_S3_PERSONAL_BUCKETNAME}/${process.env.AWS_S3_PERSONAL_FILES_FOLDER}/${oldName}`,
     });
     try {
       const copyResponse = await s3Client.send(copyCommand);
       if (copyResponse.$metadata.httpStatusCode === 200) {
         const deleteParams = {
-          Bucket: process.env.AWS_S3_BUCKETNAME,
-          Key: `${process.env.AWS_S3_FILES_FOLDER}/${oldName}`,
+          Bucket: process.env.AWS_S3_PERSONAL_BUCKETNAME,
+          Key: `${process.env.AWS_S3_PERSONAL_FILES_FOLDER}/${oldName}`,
         };
 
         const deleteCommand = new DeleteObjectCommand(deleteParams);
