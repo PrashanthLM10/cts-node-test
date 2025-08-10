@@ -101,6 +101,7 @@ const setupFilesRoutes = () => {
     // Error is called through an error middleware we  setup below
 
     upload(req, res, (err) => {
+      console.log("------------ in upload callback ------------", err);
       if (err instanceof multer.MulterError) {
         // A Multer error occurred when uploading.
         console.error("Multer error:", err);
