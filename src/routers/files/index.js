@@ -79,6 +79,7 @@ const setupMulter = () => {
       fileSize: 1024 * 1024 * Number(process.env.MAX_FILE_SIZE), // Max file size in MB
     },
   });
+  upload = upload.array("file", 5); // allow up to 5 files at a time
 };
 
 // add routes
@@ -94,17 +95,44 @@ const setupFilesRoutes = () => {
   });
 
   // upload files to s3
-  router.post(
-    "/files/upload-file",
-    upload.array("file", 5),
-    async (req, res) => {
-      // multer is setup with sulter-s3 as middelware which takes care of the uploading in its function call. Nothing to do here
-      // This function is only called on success,
-      // Error is called through an error middleware we  setup below
+  router.post("/files/upload-file", async (req, res) => {
+    // multer is setup with sulter-s3 as middelware which takes care of the uploading in its function call. Nothing to do here
+    // This function is only called on success,
+    // Error is called through an error middleware we  setup below
 
+    upload(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        // A Multer error occurred when uploading.
+        console.error("Multer error:", err);
+        if (err.code === "LIMIT_FILE_SIZE") {
+          const resErrObject = {
+            code: "FileSizeLimitExceeded",
+            error: `File size limit exceeded. Max allowed size is ${process.env.MAX_FILE_SIZE} MB`,
+            status: "Error Uploading!!!",
+          };
+          res.status(413).send(resErrObject); // 413 Payload Too Large
+        } else {
+          const resErrObject = {
+            code: err.code,
+            error: err.message,
+            status: "Error Uploading!!!",
+          };
+          res.status(500).send(resErrObject);
+        }
+      } else if (err) {
+        // An unknown error occurred when uploading.
+        console.error("Error:", err);
+        const resErrObject = {
+          code: err.code,
+          error: err.message,
+          status: "Error Uploading!!!",
+        };
+        res.status(500).send(resErrObject);
+      }
+      // Everything went fine.
       res.send(`Successfully uploaded ${req.files.length} files`);
-    }
-  );
+    });
+  });
 
   // get a presigned url for each file to download
   const getSignedURLForObject = async (client, key) => {
@@ -281,8 +309,8 @@ const configureRouter = async (app) => {
   setupS3Client();
   setupMulter();
   setupFilesRoutes();
-  app.use(router);
   app.use(errorMiddleWare);
+  app.use(router);
   return app;
 };
 
