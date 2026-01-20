@@ -7,6 +7,7 @@ const cors = require("cors");
 const { setSocket } = require("./group/index");
 const messageRoutes = require("./routers/message.routes");
 const notesRoutes = require("./routers/notes.routes");
+const aiRoutes = require("./routers/ai.routes");
 
 require("./db/mongoose");
 
@@ -33,6 +34,7 @@ const setupExpress = async () => {
   app.use(loggerMiddleWare);
   app.use(messageRoutes);
   app.use(notesRoutes);
+  app.use(aiRoutes);
   const { configureRouter } = require("./routers/files");
   app = await configureRouter(app);
 
