@@ -1,4 +1,4 @@
-const { InferenceClient } = require('@huggingface/inference');
+
 const express = require('express');
 const router = express.Router();
 const { encryptString, decryptString } = require('./files/key-decryption');
@@ -109,5 +109,33 @@ router.get('/summarize-news/:celebrity', async (req, res) => {
     res.status(500).send(`Error fetching from NewsAPI:, ${error.message}`);
   }
 });
+
+router.get('/get-ai-based-filters', async (req, res) => {
+  try{
+    const prompt = req.query.p || 'Show me the latest 10 serious records';
+    
+    const ai = new GoogleGenAI({
+      apiKey: decryptString(process.env.GOOGLE_GENAI_API_KEY),
+    });
+    const today = new Date().toLocaleDateString('en-GB'); // e.g. "20/01/26"
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      config: {
+        systemInstruction: `Today is ${today}. Convert user queries into JSON filters for fields: name, createdOn, dueDate, severity, location. Use DD/MM/YY for dates. Serious severity means {severity: "Serious"}. Return ONLY JSON.`, 
+        responseMimeType: 'application/json'
+      },
+      contents: prompt
+    });
+    console.log(response);
+    if(!response || !response.text) {
+      throw new Error('Model failed to respond');
+    }
+    res.status(200).send(response.text);
+  }catch(e) {
+    const error = `Error fetching filters: ${e.message}`;
+    console.error(error);
+    res.status(500).send(error);
+  }
+})
 
 module.exports = router;
