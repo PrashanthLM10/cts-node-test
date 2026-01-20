@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const { encryptString, decryptString } = require('./files/key-decryption');
 const NewsAPI = require('newsapi');
+const { GoogleGenAI } = require("@google/genai"); 
+
 
 router.get('/get-ai-summary', async (req, res) => {
   const prompt = req.prompt || 'Analyze all the charge data and give a good analysis of the offence history for Erling Haaland';
@@ -22,17 +24,23 @@ router.get('/get-ai-summary', async (req, res) => {
 });
 
 const getAISummary = async (prompt) => {
-
-  let api_key = decryptString(process.env.HF_KEY);
-  const hf = new InferenceClient(api_key);
-  const response = await hf.summarization({
-    model: 'facebook/bart-large-cnn', // Use a summarization model supported by Hugging Face
-    inputs: prompt,
-    parameters: {
-      max_length: 100, // Limit the response length
-    },
+  // use GoogleGenAI to get the summary
+  const genAI = new GoogleGenAI({
+    apiKey: decryptString(process.env.GOOGLE_GENAI_API_KEY),
   });
-  return response;
+
+  try {
+    const response = await genAI.models.generateContent({
+      model: 'gemini-3-flash-preview', // The latest free-tier flash model
+      contents: prompt
+    });
+
+    console.log("Response:", response.text);
+    return response.text;
+  } catch (error) {
+    console.error("Error generating content:", error);
+    return `Error generating content:${error}`;
+  }
 }
 
 async function getCelebrityNews(celebrityName) {
@@ -92,8 +100,6 @@ router.get('/summarize-news/:celebrity', async (req, res) => {
   try {
     const news = await getCelebrityNews(celebrity);
     if (news) {
-      const prompt = constructPromptForNewsSummary(news);
-      //const response = await getAISummary(prompt);
       res.status(200).send(news);
     } else {
       res.status(500).send('No news articles found');
