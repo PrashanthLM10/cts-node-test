@@ -112,7 +112,7 @@ router.get('/summarize-news/:celebrity', async (req, res) => {
 
 router.get('/get-ai-based-filters', async (req, res) => {
   try{
-    const prompt = req.query.p || 'Show me the latest 10 serious records';
+    const prompt = req.query.p || 'Show me the latest 10 serious incidents in London';
     
     const ai = new GoogleGenAI({
       apiKey: decryptString(process.env.GOOGLE_GENAI_API_KEY),
@@ -121,7 +121,7 @@ router.get('/get-ai-based-filters', async (req, res) => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-lite',
       config: {
-        systemInstruction: `Today is ${today}. Convert user queries into JSON filters for fields: name, createdOn, dueDate, severity, location. Use DD/MM/YY for dates. Serious severity means {severity: "Serious"}. Return ONLY JSON.`, 
+        systemInstruction: `Today is ${today}. Convert user queries into JSON filters for fields: caseName, submittedDate, incidentDate, incident, status - (possible options - Open, Closed), county (possible options- all football related conties in England), reportCategory - (possible options - Serious, Non-serious). Use DD/MM/YY for dates. Serious severity means {severity: "Serious"}. Return ONLY JSON. Use template {field: value}`, 
         responseMimeType: 'application/json'
       },
       contents: prompt
