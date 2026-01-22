@@ -121,7 +121,7 @@ router.get('/get-ai-based-filters', async (req, res) => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-lite',
       config: {
-        systemInstruction: `Today is ${today}. Convert user queries into JSON filters for fields: caseName, submittedDate, incidentDate, incident, status - (possible options - Open, Closed), county (possible options- all football related conties in England), reportCategory - (possible options - Serious, Non-serious). Use DD/MM/YY for dates. Serious severity means {severity: "Serious"}. 
+        systemInstruction: `Today is ${today}. Convert user queries into JSON filters for fields: caseName, submittedDate, incidentDate, incident, status - (possible options - Open, Closed), county (possible options- all football related conties in England), reportCategory - (possible options - Serious, Non Serious). Use DD/MM/YY for dates. Serious severity means {severity: "Serious"}. 
         Return ONLY JSON. For example if the query is 
         1. 'Show me the last 10 serious offences', the response should be {severity: "Serious", sort: {"incidentDate": 'desc'}},
         2. 'Show me the serious offences for London county in the last 3 months', the response should be {severity: "Serious", county: "London", fromDate: '22/10/25', toDate: '22/01/26'}`, 
