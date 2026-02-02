@@ -110,7 +110,7 @@ router.get('/summarize-news/:celebrity', async (req, res) => {
   }
 });
 
-router.get('/et-ai-based-filters', async (req, res) => {
+router.get('/get-ai-based-filters', async (req, res) => {
   try{
     const prompt = req.query.p || 'Show me the latest 10 serious incidents in London';
     
